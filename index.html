@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<style>
+			*,
+			body,
+			html {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				font-family: Arial;
+				font-size: 1rem;
+				line-height: 1.7rem;
+				color: rgba(0, 0, 0, 0.9);
+			}
+
+			#app {
+				display: flex;
+				flex-direction: row;
+				height: 100vh;
+				padding: 3rem;
+				max-width: clam(10rem, 50%, 50vw)
+			}
+
+			.my-auto {
+				margin: auto 0;
+			}
+
+			button {
+				padding: 0.9rem;
+				border: none;
+				border-radius: 0.3rem;
+			}
+
+			h1 {
+				font-family: 'Times New Roman';
+				font-size: 3.2rem;
+				letter-spacing: 0.05rem;
+			}
+
+			p {
+				margin: 2rem 0;
+				letter-spacing: 0.02rem;
+			}
+		</style>
+	</head>
+	<body>
+			<div id="app">
+
+				<div class="my-auto">
+				<h1>DocJS Testing</h1>
+
+				<p data-author="Amish" data-published="true">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Molestiae quae dicta eum ducimus accusamus quia. Culpa, laborum maxime veniam, repellendus vitae harum est voluptate modi rem exercitationem molestias, voluptates esse!</p>
+
+				<button>Click Me</button>
+				</div>
+
+			</div>
+
+		<script src="./dist/doc.js"></script>
+		<script>
+			if (doc.exists('#app p')) {
+				const para = doc.select('#app p');
+				let visibility = true;
+				doc.listen('#app button', 'click', (e) => {
+					if (visibility) {
+						doc.hide(para);
+						visibility = false;
+					} else {
+						doc.show(para);
+						visibility = true;
+					}
+				});
+			}
+		</script>
+	</body>
+</html>
