@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script async src="./index.js" type="module"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">
+      <section>
+        <div class="container">
+          <div class="mb">
+            <h1>DocJS Testing</h1>
+
+            <p data-author="Amish" data-published="true">
+              Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+              Molestiae quae dicta eum ducimus accusamus quia. Culpa, laborum
+              maxime veniam, repellendus vitae harum est voluptate modi rem
+              exercitationem molestias, voluptates esse!
+            </p>
+          </div>
+
+          <form id="sample_form">
+            <fieldset>
+              <label for="name">Name</label>
+              <input for="name" type="text" data-required data-alpha />
+            </fieldset>
+
+            <fieldset>
+              <label for="password">Password</label>
+              <input
+                for="password"
+                type="password"
+                data-required
+                data-alpha
+                data-min-length="8"
+              />
+            </fieldset>
+
+            <fieldset>
+              <label for="conf_password">Confirm Password</label>
+              <input
+                for="conf_password"
+                type="password"
+                data-required
+                data-same="password"
+              />
+            </fieldset>
+
+            <input type="submit" value="Submit" />
+          </form>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
