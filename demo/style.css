@@ -17,15 +17,16 @@ button {
 }
 
 h1 {
-  font-family: "Times New Roman";
+  font-family: ui-monospace;
   font-size: 3.2rem;
   letter-spacing: 0.05rem;
+  font-weight: lighter;
 }
 
 p {
   margin: 2rem 0 0.5rem 0;
-  letter-spacing: 0.02rem;
-  line-height: 1.3rem;
+  letter-spacing: 0.027rem;
+  line-height: 1.5rem;
 }
 
 body {

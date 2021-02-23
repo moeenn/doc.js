@@ -6,9 +6,11 @@
  *
  */
 function select(selector: string): HTMLElement {
-	const element: HTMLElement | null = document.querySelector<HTMLElement>(selector);
-	if (!element) throw `Element with selector "${selector}" not found.`;
-	return element;
+  const element: HTMLElement | null = document.querySelector<HTMLElement>(
+    selector
+  );
+  if (!element) throw `Element with selector "${selector}" not found.`;
+  return element;
 }
 
 /**
@@ -17,10 +19,12 @@ function select(selector: string): HTMLElement {
  *
  */
 function selectAll(selector: string): NodeListOf<HTMLElement> {
-	const elements: NodeListOf<HTMLElement> | null = document.querySelectorAll<HTMLElement>(selector);
-	if (!elements || elements.length === 0)
-		throw `Elements with selector "${selector}" not found.`;
-	return elements;
+  const elements: NodeListOf<HTMLElement> | null = document.querySelectorAll<HTMLElement>(
+    selector
+  );
+  if (!elements || elements.length === 0)
+    throw `Elements with selector "${selector}" not found.`;
+  return elements;
 }
 
 /**
@@ -28,19 +32,19 @@ function selectAll(selector: string): NodeListOf<HTMLElement> {
  *
  */
 function exists(selector: string): boolean {
-	return document.querySelector(selector) !== null;
+  return document.querySelector(selector) !== null;
 }
 
 /**
  *  add event listener to element with it's selector
  *
  */
-function listen(selector: string, event_name: string, callback: Function): void {
-	const element: HTMLElement = select(selector);
+function listen(selector: string, event_name: any, callback: any): void {
+  const element: HTMLElement = select(selector);
 
-	if (element) {
-		element.addEventListener(event_name, callback);
- 	}
+  if (element) {
+    element.addEventListener(event_name, callback);
+  }
 }
 
 /**
@@ -48,7 +52,7 @@ function listen(selector: string, event_name: string, callback: Function): void 
  *
  */
 function height(element: HTMLElement): number {
-	return element.offsetHeight;
+  return element.offsetHeight;
 }
 
 /**
@@ -56,7 +60,7 @@ function height(element: HTMLElement): number {
  *
  */
 function width(element: HTMLElement): number {
-	return element.offsetWidth;
+  return element.offsetWidth;
 }
 
 /**
@@ -64,9 +68,9 @@ function width(element: HTMLElement): number {
  *
  */
 function distanceFromTop(element: HTMLElement): number {
-	const rect = element.getBoundingClientRect();
-	const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-	return rect.top + scrollTop;
+  const rect = element.getBoundingClientRect();
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  return rect.top + scrollTop;
 }
 
 /**
@@ -74,19 +78,19 @@ function distanceFromTop(element: HTMLElement): number {
  *
  */
 function scrollToElement(element: HTMLElement, options = {}): void {
-	const default_options = {
-		smooth: true,
-		topOffset: 0,
-	};
+  const default_options = {
+    smooth: true,
+    topOffset: 0,
+  };
 
-	Object.assign(default_options, options);
+  Object.assign(default_options, options);
 
-	const topPixels = distanceFromTop(element);
+  const topPixels = distanceFromTop(element);
 
-	window.scroll({
-		top: topPixels - default_options.topOffset,
-		behavior: default_options.smooth ? "smooth" : "auto",
-	});
+  window.scroll({
+    top: topPixels - default_options.topOffset,
+    behavior: default_options.smooth ? "smooth" : "auto",
+  });
 }
 
 /**
@@ -94,52 +98,70 @@ function scrollToElement(element: HTMLElement, options = {}): void {
  *
  */
 function scrollToTop(options = {}): void {
-	const default_options = {
-		smooth: true,
-		topOffset: 0,
-	};
+  const default_options = {
+    smooth: true,
+    topOffset: 0,
+  };
 
-	Object.assign(default_options, options);
-	window.scroll({
-		top: default_options.topOffset,
-		behavior: default_options.smooth ? "smooth" : "auto",
-	});
+  Object.assign(default_options, options);
+  window.scroll({
+    top: default_options.topOffset,
+    behavior: default_options.smooth ? "smooth" : "auto",
+  });
 }
 
 /**
  *  get all data attributes for an element
  *
  */
-function getData(element: HTMLElement, data_name: string | null = null): Object | string {
-	if (data_name) {
-		const value: string | undefined = element.dataset[data_name];
-		if (!value) throw new Error(`Element does not have a Data Attribute of '${data_name}'`);
-		return value;
-	}
-	return element.dataset;
+function getData(
+  element: HTMLElement,
+  data_name: string | null = null
+): Object | string {
+  if (data_name) {
+    const value: string | undefined = element.dataset[data_name];
+    if (!value)
+      throw new Error(
+        `Element does not have a Data Attribute of '${data_name}'`
+      );
+    return value;
+  }
+  return element.dataset;
 }
 
 /**
  *  get all attributes for an element
  *
  */
-function getAttibutes(element: HTMLElement, attriute_name: string | null = null): string {
-	const attributes = element.attributes;
+function getAttibutes(element: HTMLElement): Array<Object> {
+  const attributes: Array<Attr> = [...element.attributes];
+  const result: Array<Object> = [];
 
-	if (attriute_name) {
-		return attributes[`data-${attriute_name}`].textContent;
-	}
+  attributes.forEach((attribute) => {
+    result.push({
+      attribute: attribute.name,
+      value: attribute.textContent,
+    });
+  });
 
-	const result = [];
+  return result;
+}
 
-	for (let i = 0; i < attributes.length; i++) {
-		result.push({
-			attribute: attributes[i].name,
-			value: attributes[i].textContent,
-		});
-	}
+/**
+ *  get single attribute of an element
+ *
+ */
+function getAttibute(element: HTMLElement, attribute_name: string): string {
+  const attributes: NamedNodeMap = element.attributes;
+  const error = new Error(`Attribute '${attribute_name}' not found on Element`);
 
-	return result;
+  const attribute = attributes.getNamedItem(`data-${attribute_name}`);
+  if (!attribute) {
+    throw error;
+  }
+
+  if (!attribute.textContent) throw error;
+  return attribute.textContent;
 }
 
 /**
@@ -147,109 +169,126 @@ function getAttibutes(element: HTMLElement, attriute_name: string | null = null)
  *
  */
 function applyStyles(element: HTMLElement, styles: Object): void {
-	Object.assign(element.style, styles);
+  Object.assign(element.style, styles);
 }
 
 /**
  *  hide elements from DOM
  *
  */
-function hide(el: HTMLElement): void {
-	el.style.opacity = 1;
-
-	(function fade() {
-		if ((el.style.opacity -= 0.1) < 0) {
-			el.style.display = "none";
-		} else {
-			requestAnimationFrame(fade);
-		}
-	})();
-
-	el.hidden = true;
+function hide(element: HTMLElement): void {
+  let fadeEffect = setInterval(function () {
+    if (!element.style.opacity) {
+      element.style.opacity = "1";
+    }
+    if (parseFloat(element.style.opacity) > 0) {
+      const opacity: number = parseFloat(element.style.opacity) - 0.1;
+      element.style.opacity = opacity.toString();
+    } else {
+      clearInterval(fadeEffect);
+      element.style.display = "none";
+    }
+  }, 10);
 }
 
 /**
  *  show hidden elements in DOM
  *
  */
-function show(el: HTMLElement, display): void {
-	el.style.opacity = 0;
-	el.style.display = display || "block";
+function show(el: HTMLElement, display: string): void {
+  el.style.opacity = "0";
+  el.style.display = display ?? "block";
 
-	(function fade() {
-		var val = parseFloat(el.style.opacity);
-		if (!((val += 0.1) > 1)) {
-			el.style.opacity = val;
-			requestAnimationFrame(fade);
-		}
-	})();
-
-	el.hidden = false;
+  (function fade() {
+    let val = parseFloat(el.style.opacity);
+    if (!((val += 0.05) > 1)) {
+      el.style.opacity = `${val}`;
+      requestAnimationFrame(fade);
+    }
+  })();
 }
 
-
 export class ActiveElement {
-	#element = null;
-	#selector = null;
+  private _element: HTMLElement | null;
+  private _selector: string;
 
-	constructor(selector) {
-		this.#element = document.querySelector(selector);
-		if (!this.#element) {
-			throw new Error(`Failed to Find element with selector '${selector}'`);
-		}
+  constructor(selector: string) {
+    this._element = document.querySelector<HTMLElement>(selector);
+    if (!this._element) {
+      throw new Error(`Failed to Find element with selector '${selector}'`);
+    }
 
-		this.#selector = selector; 
-	}
+    this._selector = selector;
+  }
 
-	get() {
-		this.#element = document.querySelector(this.#selector);
-		if (!this.#element) {
-			throw new Error(`It seems that element with selector '${selector}' no longer exists in the DOM`);
-		}
+  public get(selector: string | null = null): HTMLElement {
+    selector = selector ? `${this._selector} ${selector}` : this._selector;
 
-		return this.#element;
-	}
+    this._element = document.querySelector<HTMLElement>(selector);
+    if (!this._element) {
+      throw new Error(
+				`It seems that element with selector '${selector}' does not exist in the DOM`
+			);
+    }
+
+    return this._element;
+  }
 }
 
 export class ActiveElements {
-	#elements = null;
-	#selector = null;
+  private _elements: NodeListOf<HTMLElement> | null;
+  private _selector: string;
 
-	constructor(selector) {
-		this.#elements = document.querySelectorAll(selector);
-		if (!this.#elements) {
-			throw new Error(`Failed to Find elements with selector '${selector}'`);
-		}
+  constructor(selector: string) {
+    this._elements = document.querySelectorAll<HTMLElement>(selector);
+    if (!this._elements) {
+      throw new Error(`Failed to Find elements with selector '${selector}'`);
+    }
 
-		this.#selector = selector; 
-	}
+    this._selector = selector;
+  }
 
-	get(selector = null) {
-		let combine_selector = (selector) ? `${this.#selector} ${selector}`: this.#selector;
-			
-		this.#elements = document.querySelector(combine_selector);
-		if (!this.#elements) {
-			throw new Error(`It seems that elements with selector '${combine_selector}' don't in the DOM`);
-		}
+  public get(selector: string): HTMLElement {
+    selector = `${this._selector} ${selector}`;
 
-		return this.#elements;
-	}
+    const element: HTMLElement | null = document.querySelector<HTMLElement>(
+      selector
+    );
+    if (!element) {
+      throw new Error(
+        `It seems that elements with selector '${selector}' don't exist in the DOM`
+      );
+    }
+
+    return element;
+  }
+
+  public get_all(): NodeListOf<HTMLElement> {
+    this._elements = document.querySelectorAll<HTMLElement>(this._selector);
+    if (!this._elements) {
+      throw new Error(
+        `It seems that elements with selector '${this._selector}' don't in the DOM`
+      );
+    }
+
+    return this._elements;
+  }
 }
 
-
 export default {
-	select,
-	selectAll,
-	exists,
-	listen,
-	height,
-	width,
-	distanceFromTop,
-	scrollToElement,
-	scrollToTop,
-	getData,
-	getAttibutes,
-	applyStyles,
-	hide,
-	show,
+  select,
+  selectAll,
+  exists,
+  listen,
+  height,
+  width,
+  distanceFromTop,
+  scrollToElement,
+  scrollToTop,
+  getData,
+  getAttibutes,
+  getAttibute,
+  applyStyles,
+  hide,
+  show,
 };
