@@ -6,6 +6,8 @@
  *
  */
 function select(selector: string): HTMLElement {
+  assert(selector.constructor === String, "selector must be a valid string");
+
   const element: HTMLElement | null = document.querySelector<HTMLElement>(
     selector
   );
@@ -19,6 +21,8 @@ function select(selector: string): HTMLElement {
  *
  */
 function selectAll(selector: string): NodeListOf<HTMLElement> {
+  assert(selector.constructor === String, "selector must be a valid string");
+
   const elements: NodeListOf<HTMLElement> | null = document.querySelectorAll<HTMLElement>(
     selector
   );
@@ -32,19 +36,8 @@ function selectAll(selector: string): NodeListOf<HTMLElement> {
  *
  */
 function exists(selector: string): boolean {
+  assert(selector.constructor === String, "selector must be a valid string");
   return document.querySelector(selector) !== null;
-}
-
-/**
- *  add event listener to element with it's selector
- *
- */
-function listen(selector: string, event_name: any, callback: any): void {
-  const element: HTMLElement = select(selector);
-
-  if (element) {
-    element.addEventListener(event_name, callback);
-  }
 }
 
 /**
@@ -52,6 +45,7 @@ function listen(selector: string, event_name: any, callback: any): void {
  *
  */
 function height(element: HTMLElement): number {
+  assert(element instanceof HTMLElement, "element must be a valid DOM Object");
   return element.offsetHeight;
 }
 
@@ -60,6 +54,7 @@ function height(element: HTMLElement): number {
  *
  */
 function width(element: HTMLElement): number {
+  assert(element instanceof HTMLElement, "element must be a valid DOM Object");
   return element.offsetWidth;
 }
 
@@ -68,6 +63,7 @@ function width(element: HTMLElement): number {
  *
  */
 function distanceFromTop(element: HTMLElement): number {
+  assert(element instanceof HTMLElement, "element must be a valid DOM Object");
   const rect = element.getBoundingClientRect();
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   return rect.top + scrollTop;
@@ -78,6 +74,9 @@ function distanceFromTop(element: HTMLElement): number {
  *
  */
 function scrollToElement(element: HTMLElement, options = {}): void {
+  assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  assert(options.constructor === Object, "options must be an Object Literal");
+
   const default_options = {
     smooth: true,
     topOffset: 0,
@@ -98,6 +97,7 @@ function scrollToElement(element: HTMLElement, options = {}): void {
  *
  */
 function scrollToTop(options = {}): void {
+  assert(options.constructor === Object, "options must be an Object Literal");
   const default_options = {
     smooth: true,
     topOffset: 0,
@@ -118,6 +118,14 @@ function getData(
   element: HTMLElement,
   data_name: string | null = null
 ): Object | string {
+  assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  if (data_name) {
+    assert(
+      data_name.constructor === String,
+      "data_name must be a valid string"
+    );
+  }
+
   if (data_name) {
     const value: string | undefined = element.dataset[data_name];
     if (!value)
@@ -134,6 +142,8 @@ function getData(
  *
  */
 function getAttibutes(element: HTMLElement): Array<Object> {
+  assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+
   const attributes: Array<Attr> = [...element.attributes];
   const result: Array<Object> = [];
 
@@ -152,6 +162,12 @@ function getAttibutes(element: HTMLElement): Array<Object> {
  *
  */
 function getAttibute(element: HTMLElement, attribute_name: string): string {
+  assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  assert(
+    attribute_name.constructor === String,
+    "attribute_name must be a valid string"
+  );
+
   const attributes: NamedNodeMap = element.attributes;
   const error = new Error(`Attribute '${attribute_name}' not found on Element`);
 
@@ -169,6 +185,12 @@ function getAttibute(element: HTMLElement, attribute_name: string): string {
  *
  */
 function applyStyles(element: HTMLElement, styles: Object): void {
+  assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  assert(
+    styles.constructor === Object,
+    "styles must be a valid Object Literal"
+  );
+
   Object.assign(element.style, styles);
 }
 
@@ -177,6 +199,8 @@ function applyStyles(element: HTMLElement, styles: Object): void {
  *
  */
 function hide(element: HTMLElement): void {
+  assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+
   let fadeEffect = setInterval(function () {
     if (!element.style.opacity) {
       element.style.opacity = "1";
@@ -195,20 +219,30 @@ function hide(element: HTMLElement): void {
  *  show hidden elements in DOM
  *
  */
-function show(el: HTMLElement, display: string): void {
-  el.style.opacity = "0";
-  el.style.display = display ?? "block";
+function show(element: HTMLElement, display: string | null = null): void {
+  assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  if (display) {
+    assert(display.constructor === String, "display must be a valid string");
+  }
+
+  element.style.opacity = "0";
+  element.style.display = display ?? "block";
 
   (function fade() {
-    let val = parseFloat(el.style.opacity);
+    let val = parseFloat(element.style.opacity);
     if (!((val += 0.05) > 1)) {
-      el.style.opacity = `${val}`;
+      element.style.opacity = `${val}`;
       requestAnimationFrame(fade);
     }
   })();
 }
 
-export class ActiveElement {
+/**
+ *  mechanism for re-fetching a DOM element whenever we need
+ *  its lateset values
+ *
+ */
+class ActiveElement {
   private _element: HTMLElement | null;
   private _selector: string;
 
@@ -227,51 +261,106 @@ export class ActiveElement {
     this._element = document.querySelector<HTMLElement>(selector);
     if (!this._element) {
       throw new Error(
-				`It seems that element with selector '${selector}' does not exist in the DOM`
-			);
+        `It seems that element with selector '${selector}' does not exist in the DOM`
+      );
     }
 
     return this._element;
   }
 }
 
-export class ActiveElements {
-  private _elements: NodeListOf<HTMLElement> | null;
-  private _selector: string;
+/**
+ *  local in-browser storage
+ *
+ */
+type StoreType = 'cookie' | 'localStorage';
+interface StoreOptions {
+  adopt: boolean,
+  store_type: StoreType,
+}
 
-  constructor(selector: string) {
-    this._elements = document.querySelectorAll<HTMLElement>(selector);
-    if (!this._elements) {
-      throw new Error(`Failed to Find elements with selector '${selector}'`);
+class Store {
+  private _name: string;
+  private _data: Object;
+  private _store_type: StoreType;
+
+  constructor(name: string, options: Object) {
+    let default_options: StoreOptions = {
+      adopt: false,
+      store_type: 'localStorage',
+    };
+
+    Object.assign(default_options, options);
+
+    this._name = name;
+    this._data = default_options.adopt ? this._read() : {};
+
+    if (default_options.adopt) {
+      this._data = this._read();
+      return;
     }
 
-    this._selector = selector;
+    if (this._check_initialized()) {
+      this._flush_store();
+    }
+
+    this._store_type = default_options.store_type;
+    this._data = {};
   }
 
-  public get(selector: string): HTMLElement {
-    selector = `${this._selector} ${selector}`;
-
-    const element: HTMLElement | null = document.querySelector<HTMLElement>(
-      selector
-    );
-    if (!element) {
-      throw new Error(
-        `It seems that elements with selector '${selector}' don't exist in the DOM`
-      );
-    }
-
-    return element;
+  /**
+   *  check if data already exists in browser against this store name
+   */ 
+  private _check_initialized(): boolean {
+    return localStorage.getItem(this._name) !== null;
   }
 
-  public get_all(): NodeListOf<HTMLElement> {
-    this._elements = document.querySelectorAll<HTMLElement>(this._selector);
-    if (!this._elements) {
-      throw new Error(
-        `It seems that elements with selector '${this._selector}' don't in the DOM`
-      );
+  /**
+   *  write data to browser local store
+   */
+  private _write(): void {
+    const dataJSON = JSON.stringify(this._data);
+    localStorage.setItem(this._name, dataJSON);
+  }
+
+  private _read(): Object {
+    const dataJSON: string | null = localStorage.getItem(this._name);
+    let data: Object | null;
+
+    if (dataJSON) {
+      try {
+        data = JSON.parse(dataJSON);
+      } catch (_) {
+        throw new Error("Store Data corrupted!");
+      }
+    } else {
+      return {};
     }
 
-    return this._elements;
+    return data ? data : {};
+  }
+
+  /**
+   *  clear any data in browser storage against current store name
+  */
+  private _flush_store() {
+    localStorage.remove(this._name);
+  }
+
+  public store(data: Object): void {
+    Object.assign(this._data, data);
+    this._write();
+  }
+}
+
+/**
+ *  assert conditions and exit on assertion failure
+ *  function was needed because console.assert() does not exit on failure
+ *
+ */
+function assert(condition: boolean, message: string | null = null): void {
+  if (!condition) {
+    throw new Error(message ?? "Assertion failed");
   }
 }
 
@@ -279,7 +368,6 @@ export default {
   select,
   selectAll,
   exists,
-  listen,
   height,
   width,
   distanceFromTop,
@@ -292,3 +380,5 @@ export default {
   hide,
   show,
 };
+
+export { ActiveElement, Store, assert };

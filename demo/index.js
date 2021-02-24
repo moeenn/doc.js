@@ -3,7 +3,7 @@ import {ActiveElement} from '../dist/doc.js';
 
 window.doc = doc;
 
-if (doc.exists('#app p')) {
+if (doc.exists('#sample_form')) {
   const form_element = new ActiveElement('#sample_form');
   
   form_element
