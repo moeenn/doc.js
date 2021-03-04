@@ -1,5 +1,10 @@
 {
+  "scripts": {
+    "watch": "tsc -w",
+    "serve": "serve ./"
+  },
   "devDependencies": {
     "typescript": "^4.1.5"
-  }
+  },
+  "dependencies": {}
 }
