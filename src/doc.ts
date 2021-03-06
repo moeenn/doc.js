@@ -6,7 +6,10 @@
  *
  */
 function select(selector: string): HTMLElement {
-  console.assert(selector.constructor === String, "selector must be a valid string");
+  console.assert(
+    selector.constructor === String,
+    "selector must be a valid string"
+  );
 
   const element: HTMLElement | null = document.querySelector<HTMLElement>(
     selector
@@ -21,7 +24,10 @@ function select(selector: string): HTMLElement {
  *
  */
 function selectAll(selector: string): NodeListOf<HTMLElement> {
-  console.assert(selector.constructor === String, "selector must be a valid string");
+  console.assert(
+    selector.constructor === String,
+    "selector must be a valid string"
+  );
 
   const elements: NodeListOf<HTMLElement> | null = document.querySelectorAll<HTMLElement>(
     selector
@@ -37,9 +43,12 @@ function selectAll(selector: string): NodeListOf<HTMLElement> {
  *
  */
 function selectActive(selector: string): Function {
-  return () => {
-    const element: HTMLElement | null = document.querySelector<HTMLElement>(selector); 
-    if (!element) throw new Error(`Element with selector "${selector}" not found.`);
+  return (): HTMLElement => {
+    const element: HTMLElement | null = document.querySelector<HTMLElement>(
+      selector
+    );
+    if (!element)
+      throw new Error(`Element with selector "${selector}" not found.`);
     return element;
   };
 }
@@ -48,9 +57,22 @@ function selectActive(selector: string): Function {
  *  check if element exists
  *
  */
-function exists(selector: string): boolean {
-  console.assert(selector.constructor === String, "selector must be a valid string");
-  return document.querySelector(selector) !== null;
+function exists(selectors: Array<string>): boolean {
+  console.assert(
+    selectors.constructor === Array &&
+      selectors.every((i) => i.constructor === String),
+    "'selectors' must be an Array of Strings"
+  );
+
+  let result: boolean = true;
+  selectors.forEach((selector) => {
+    const element: HTMLElement | null = document.querySelector<HTMLElement>(
+      selector
+    );
+    if (!element) result = false;
+  });
+
+  return result;
 }
 
 /**
@@ -58,7 +80,10 @@ function exists(selector: string): boolean {
  *
  */
 function height(element: HTMLElement): number {
-  console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
   return element.offsetHeight;
 }
 
@@ -67,7 +92,10 @@ function height(element: HTMLElement): number {
  *
  */
 function width(element: HTMLElement): number {
-  console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
   return element.offsetWidth;
 }
 
@@ -76,7 +104,10 @@ function width(element: HTMLElement): number {
  *
  */
 function distanceFromTop(element: HTMLElement): number {
-  console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
   const rect = element.getBoundingClientRect();
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   return rect.top + scrollTop;
@@ -87,8 +118,14 @@ function distanceFromTop(element: HTMLElement): number {
  *
  */
 function scrollToElement(element: HTMLElement, options = {}): void {
-  console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
-  console.assert(options.constructor === Object, "options must be an Object Literal");
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
+  console.assert(
+    options.constructor === Object,
+    "options must be an Object Literal"
+  );
 
   const default_options = {
     smooth: true,
@@ -110,7 +147,10 @@ function scrollToElement(element: HTMLElement, options = {}): void {
  *
  */
 function scrollToTop(options = {}): void {
-  console.assert(options.constructor === Object, "options must be an Object Literal");
+  console.assert(
+    options.constructor === Object,
+    "options must be an Object Literal"
+  );
   const default_options = {
     smooth: true,
     topOffset: 0,
@@ -131,7 +171,10 @@ function getData(
   element: HTMLElement,
   data_name: string | null = null
 ): Object | string {
-  console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
   if (data_name) {
     console.assert(
       data_name.constructor === String,
@@ -155,7 +198,10 @@ function getData(
  *
  */
 function getAttibutes(element: HTMLElement): Array<Object> {
-  console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
 
   const attributes: Array<Attr> = [...element.attributes];
   const result: Array<Object> = [];
@@ -175,7 +221,10 @@ function getAttibutes(element: HTMLElement): Array<Object> {
  *
  */
 function getAttibute(element: HTMLElement, attribute_name: string): string {
-  console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
   console.assert(
     attribute_name.constructor === String,
     "attribute_name must be a valid string"
@@ -198,7 +247,10 @@ function getAttibute(element: HTMLElement, attribute_name: string): string {
  *
  */
 function applyStyles(element: HTMLElement, styles: Object): void {
-  console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
   console.assert(
     styles.constructor === Object,
     "styles must be a valid Object Literal"
@@ -212,7 +264,10 @@ function applyStyles(element: HTMLElement, styles: Object): void {
  *
  */
 function hide(element: HTMLElement): void {
-  console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
 
   let fadeEffect = setInterval(function () {
     if (!element.style.opacity) {
@@ -233,9 +288,15 @@ function hide(element: HTMLElement): void {
  *
  */
 function show(element: HTMLElement, display: string | null = null): void {
-  console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
   if (display) {
-    console.assert(display.constructor === String, "display must be a valid string");
+    console.assert(
+      display.constructor === String,
+      "display must be a valid string"
+    );
   }
 
   element.style.opacity = "0";
@@ -248,6 +309,26 @@ function show(element: HTMLElement, display: string | null = null): void {
       requestAnimationFrame(fade);
     }
   })();
+}
+
+/**
+ *  dispatch custom events on document
+ *
+ */
+function emit(event_name: string, payload: any = null): void {
+  const event = new CustomEvent(event_name, {
+    detail: payload,
+  });
+
+  document.dispatchEvent(event);
+}
+
+/**
+ *  redirect to another page
+ *
+ */
+function redirect(url: Location): void {
+  window.location = url;
 }
 
 export default {
@@ -266,4 +347,6 @@ export default {
   applyStyles,
   hide,
   show,
+  emit,
+  redirect,
 };

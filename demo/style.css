@@ -80,3 +80,10 @@ form input[type="submit"] {
   display: flex;
   height: 100vh;
 }
+
+.link,
+[role='link'] {
+  color: rgb(77, 77, 224);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
