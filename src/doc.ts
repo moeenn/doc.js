@@ -5,17 +5,23 @@
  *  with error handling
  *
  */
-function select(selector: string): HTMLElement {
+function select(selector: string): Promise<HTMLElement> {
   console.assert(
     selector.constructor === String,
     "selector must be a valid string"
   );
 
-  const element: HTMLElement | null = document.querySelector<HTMLElement>(
-    selector
-  );
-  if (!element) throw `Element with selector "${selector}" not found.`;
-  return element;
+  return new Promise((resolve: Function, reject: Function) => {
+    const element: HTMLElement | null = document.querySelector<HTMLElement>(
+      selector
+    );
+
+    if (!element) {
+      reject(`Element with selector "${selector}" not found.`);
+    } else {
+      resolve(element);
+    }
+  });
 }
 
 /**
@@ -23,101 +29,102 @@ function select(selector: string): HTMLElement {
  *  with error handling
  *
  */
-function selectAll(selector: string): NodeListOf<HTMLElement> {
+function selectAll(selector: string): Promise<NodeListOf<HTMLElement>> {
   console.assert(
     selector.constructor === String,
     "selector must be a valid string"
   );
 
-  const elements: NodeListOf<HTMLElement> | null = document.querySelectorAll<HTMLElement>(
-    selector
-  );
-  if (!elements || elements.length === 0)
-    throw `Elements with selector "${selector}" not found.`;
-  return elements;
-}
-
-/**
- *  mechanism for re-fetching a DOM element whenever we need
- *  its lateset values
- *
- */
-function selectActive(selector: string): Function {
-  return (): HTMLElement => {
-    const element: HTMLElement | null = document.querySelector<HTMLElement>(
+  return new Promise((resolve: Function, reject: Function) => {
+    const elements: NodeListOf<HTMLElement> | null = document.querySelectorAll<HTMLElement>(
       selector
     );
-    if (!element)
-      throw new Error(`Element with selector "${selector}" not found.`);
-    return element;
-  };
+
+    if (!elements || elements.length === 0) {
+      reject(`Elements with selector "${selector}" not found.`);
+    }
+
+    resolve(elements);
+  });
 }
 
 /**
  *  check if element exists
  *
  */
-function exists(selectors: Array<string>): boolean {
+function exists(selectors: Array<string>): Promise<boolean> {
   console.assert(
     selectors.constructor === Array &&
       selectors.every((i) => i.constructor === String),
     "'selectors' must be an Array of Strings"
   );
 
-  let result: boolean = true;
-  selectors.forEach((selector) => {
-    const element: HTMLElement | null = document.querySelector<HTMLElement>(
-      selector
-    );
-    if (!element) result = false;
-  });
+  return new Promise((resolve: Function) => {
+    let result: boolean = true;
+    selectors.forEach((selector) => {
+      const element: HTMLElement | null = document.querySelector<HTMLElement>(
+        selector
+      );
+      if (!element) result = false;
+    });
 
-  return result;
+    resolve(result);
+  });
 }
 
 /**
  *  find element height
  *
  */
-function height(element: HTMLElement): number {
+function height(element: HTMLElement): Promise<number> {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
-  return element.offsetHeight;
+
+  return new Promise((resolve: Function) => {
+    resolve(element.offsetHeight);
+  });
 }
 
 /**
  *  find element width
  *
  */
-function width(element: HTMLElement): number {
+function width(element: HTMLElement): Promise<number> {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
-  return element.offsetWidth;
+
+  return new Promise((resolve: Function) => {
+    resolve(element.offsetWidth);
+  });
 }
 
 /**
  *  get element position relative to top of the page
  *
  */
-function distanceFromTop(element: HTMLElement): number {
+function distanceFromTop(element: HTMLElement): Promise<number> {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
-  const rect = element.getBoundingClientRect();
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  return rect.top + scrollTop;
+
+  return new Promise((resolve: Function) => {
+    const rect = element.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    resolve(rect.top + scrollTop);
+  });
 }
 
 /**
  *  smooth scroll to element
  *
  */
-function scrollToElement(element: HTMLElement, options = {}): void {
+function scrollToElement(element: HTMLElement, options = {}): Promise<boolean> {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
@@ -134,11 +141,15 @@ function scrollToElement(element: HTMLElement, options = {}): void {
 
   Object.assign(default_options, options);
 
-  const topPixels = distanceFromTop(element);
+  return new Promise(async (resolve: Function) => {
+    const topPixels: number = await distanceFromTop(element);
 
-  window.scroll({
-    top: topPixels - default_options.topOffset,
-    behavior: default_options.smooth ? "smooth" : "auto",
+    window.scroll({
+      top: topPixels - default_options.topOffset,
+      behavior: default_options.smooth ? "smooth" : "auto",
+    });
+
+    resolve(true);
   });
 }
 
@@ -146,7 +157,7 @@ function scrollToElement(element: HTMLElement, options = {}): void {
  *  scroll to the top of the document
  *
  */
-function scrollToTop(options = {}): void {
+function scrollToTop(options = {}): Promise<boolean> {
   console.assert(
     options.constructor === Object,
     "options must be an Object Literal"
@@ -157,9 +168,14 @@ function scrollToTop(options = {}): void {
   };
 
   Object.assign(default_options, options);
-  window.scroll({
-    top: default_options.topOffset,
-    behavior: default_options.smooth ? "smooth" : "auto",
+
+  return new Promise((resolve: Function) => {
+    window.scroll({
+      top: default_options.topOffset,
+      behavior: default_options.smooth ? "smooth" : "auto",
+    });
+
+    resolve(true);
   });
 }
 
@@ -170,7 +186,7 @@ function scrollToTop(options = {}): void {
 function getData(
   element: HTMLElement,
   data_name: string | null = null
-): Object | string {
+): Promise<Object | string> {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
@@ -182,45 +198,53 @@ function getData(
     );
   }
 
-  if (data_name) {
-    const value: string | undefined = element.dataset[data_name];
-    if (!value)
-      throw new Error(
-        `Element does not have a Data Attribute of '${data_name}'`
-      );
-    return value;
-  }
-  return element.dataset;
+  return new Promise((resolve: Function, reject: Function) => {
+    if (data_name) {
+      const value: string | undefined = element.dataset[data_name];
+      if (!value) {
+        reject(`Element does not have a Data Attribute of '${data_name}'`);
+      }
+
+      resolve(value);
+    }
+
+    resolve(element.dataset);
+  });
 }
 
 /**
  *  get all attributes for an element
  *
  */
-function getAttibutes(element: HTMLElement): Array<Object> {
+function getAttibutes(element: HTMLElement): Promise<Array<Object>> {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
 
-  const attributes: Array<Attr> = [...element.attributes];
-  const result: Array<Object> = [];
+  return new Promise((resolve: Function) => {
+    const attributes: Array<Attr> = [...element.attributes];
+    const result: Array<Object> = [];
 
-  attributes.forEach((attribute) => {
-    result.push({
-      attribute: attribute.name,
-      value: attribute.textContent,
+    attributes.forEach((attribute) => {
+      result.push({
+        attribute: attribute.name,
+        value: attribute.textContent,
+      });
     });
-  });
 
-  return result;
+    resolve(result);
+  });
 }
 
 /**
  *  get single attribute of an element
  *
  */
-function getAttibute(element: HTMLElement, attribute_name: string): string {
+function getAttibute(
+  element: HTMLElement,
+  attribute_name: string
+): Promise<string> {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
@@ -230,23 +254,30 @@ function getAttibute(element: HTMLElement, attribute_name: string): string {
     "attribute_name must be a valid string"
   );
 
-  const attributes: NamedNodeMap = element.attributes;
-  const error = new Error(`Attribute '${attribute_name}' not found on Element`);
+  return new Promise((resolve: Function, reject: Function) => {
+    const attributes: NamedNodeMap = element.attributes;
+    const error = `Attribute '${attribute_name}' not found on Element`;
 
-  const attribute = attributes.getNamedItem(`data-${attribute_name}`);
-  if (!attribute) {
-    throw error;
-  }
+    const attribute: Attr | null = attributes.getNamedItem(
+      `data-${attribute_name}`
+    );
+    if (!attribute) {
+      reject(error);
+    }
 
-  if (!attribute.textContent) throw error;
-  return attribute.textContent;
+    if (attribute && !attribute.textContent) {
+      reject(error);
+    }
+
+    if (attribute) resolve(attribute.textContent);
+  });
 }
 
 /**
  *  add css classes to document
  *
  */
-function applyStyles(element: HTMLElement, styles: Object): void {
+function applyStyles(element: HTMLElement, styles: Object): Promise<boolean> {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
@@ -256,7 +287,10 @@ function applyStyles(element: HTMLElement, styles: Object): void {
     "styles must be a valid Object Literal"
   );
 
-  Object.assign(element.style, styles);
+  return new Promise((resolve: Function) => {
+    Object.assign(element.style, styles);
+    resolve(true);
+  });
 }
 
 /**
@@ -324,6 +358,21 @@ function emit(event_name: string, payload: any = null): void {
 }
 
 /**
+ *  listen for events
+ *
+ */
+function listen(
+  target: HTMLElement,
+  event_name: keyof HTMLElementEventMap,
+  callback: any
+): Promise<boolean> {
+  return new Promise((resolve: Function) => {
+    target.addEventListener(event_name, callback);
+    resolve(true);
+  });
+}
+
+/**
  *  redirect to another page
  *
  */
@@ -334,7 +383,6 @@ function redirect(url: Location): void {
 export default {
   select,
   selectAll,
-  selectActive,
   exists,
   height,
   width,
@@ -348,5 +396,6 @@ export default {
   hide,
   show,
   emit,
+  listen,
   redirect,
 };
