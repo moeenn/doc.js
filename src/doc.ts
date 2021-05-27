@@ -5,23 +5,28 @@
  *  with error handling
  *
  */
-function select(selector: string): Promise<HTMLElement> {
+function select(
+  selector: string,
+  target: HTMLDocument | HTMLElement = document
+): HTMLElement {
   console.assert(
     selector.constructor === String,
     "selector must be a valid string"
   );
 
-  return new Promise((resolve: Function, reject: Function) => {
-    const element: HTMLElement | null = document.querySelector<HTMLElement>(
-      selector
-    );
+  console.assert(
+    target.constructor === HTMLDocument || target instanceof HTMLElement,
+    "target must be of type HTMLDocument or HTMLElement"
+  );
 
-    if (!element) {
-      reject(`Element with selector "${selector}" not found.`);
-    } else {
-      resolve(element);
-    }
-  });
+  const element: HTMLElement | null =
+    target.querySelector<HTMLElement>(selector);
+
+  if (!element) {
+    throw new Error(`Element with selector "${selector}" not found.`);
+  }
+
+  return element;
 }
 
 /**
@@ -29,102 +34,106 @@ function select(selector: string): Promise<HTMLElement> {
  *  with error handling
  *
  */
-function selectAll(selector: string): Promise<NodeListOf<HTMLElement>> {
+function selectAll(
+  selector: string,
+  target: HTMLDocument | HTMLElement = document
+): NodeListOf<HTMLElement> {
   console.assert(
     selector.constructor === String,
     "selector must be a valid string"
   );
 
-  return new Promise((resolve: Function, reject: Function) => {
-    const elements: NodeListOf<HTMLElement> | null = document.querySelectorAll<HTMLElement>(
-      selector
-    );
+  console.assert(
+    target.constructor === HTMLDocument || target instanceof HTMLElement,
+    "target must be of type HTMLDocument or HTMLElement"
+  );
 
-    if (!elements || elements.length === 0) {
-      reject(`Elements with selector "${selector}" not found.`);
-    }
+  const elements: NodeListOf<HTMLElement> | null =
+    target.querySelectorAll<HTMLElement>(selector);
 
-    resolve(elements);
-  });
+  if (!elements || elements.length === 0) {
+    throw new Error(`Elements with selector "${selector}" not found.`);
+  }
+
+  return elements;
 }
 
 /**
  *  check if element exists
  *
  */
-function exists(selectors: Array<string>): Promise<boolean> {
+function exists(
+  selectors: Array<string>,
+  target: HTMLDocument | HTMLElement = document
+): boolean {
   console.assert(
     selectors.constructor === Array &&
       selectors.every((i) => i.constructor === String),
     "'selectors' must be an Array of Strings"
   );
 
-  return new Promise((resolve: Function) => {
-    let result: boolean = true;
-    selectors.forEach((selector) => {
-      const element: HTMLElement | null = document.querySelector<HTMLElement>(
-        selector
-      );
-      if (!element) result = false;
-    });
+  console.assert(
+    target.constructor === HTMLDocument || target instanceof HTMLElement,
+    "target must be of type HTMLDocument or HTMLElement"
+  );
 
-    resolve(result);
+  let result: boolean = true;
+  selectors.forEach((selector) => {
+    const element: HTMLElement | null =
+      target.querySelector<HTMLElement>(selector);
+    if (!element) result = false;
   });
+
+  return result;
 }
 
 /**
  *  find element height
  *
  */
-function height(element: HTMLElement): Promise<number> {
+function height(element: HTMLElement): number {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
 
-  return new Promise((resolve: Function) => {
-    resolve(element.offsetHeight);
-  });
+  return element.offsetHeight;
 }
 
 /**
  *  find element width
  *
  */
-function width(element: HTMLElement): Promise<number> {
+function width(element: HTMLElement): number {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
 
-  return new Promise((resolve: Function) => {
-    resolve(element.offsetWidth);
-  });
+  return element.offsetWidth;
 }
 
 /**
  *  get element position relative to top of the page
  *
  */
-function distanceFromTop(element: HTMLElement): Promise<number> {
+function distanceFromTop(element: HTMLElement): number {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
 
-  return new Promise((resolve: Function) => {
-    const rect = element.getBoundingClientRect();
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const rect = element.getBoundingClientRect();
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-    resolve(rect.top + scrollTop);
-  });
+  return rect.top + scrollTop;
 }
 
 /**
  *  smooth scroll to element
  *
  */
-function scrollToElement(element: HTMLElement, options = {}): Promise<boolean> {
+function scrollToElement(element: HTMLElement, options = {}): boolean {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
@@ -141,23 +150,21 @@ function scrollToElement(element: HTMLElement, options = {}): Promise<boolean> {
 
   Object.assign(default_options, options);
 
-  return new Promise(async (resolve: Function) => {
-    const topPixels: number = await distanceFromTop(element);
+  const topPixels: number = distanceFromTop(element);
 
-    window.scroll({
-      top: topPixels - default_options.topOffset,
-      behavior: default_options.smooth ? "smooth" : "auto",
-    });
-
-    resolve(true);
+  window.scroll({
+    top: topPixels - default_options.topOffset,
+    behavior: default_options.smooth ? "smooth" : "auto",
   });
+
+  return true;
 }
 
 /**
  *  scroll to the top of the document
  *
  */
-function scrollToTop(options = {}): Promise<boolean> {
+function scrollToTop(options = {}): boolean {
   console.assert(
     options.constructor === Object,
     "options must be an Object Literal"
@@ -169,14 +176,12 @@ function scrollToTop(options = {}): Promise<boolean> {
 
   Object.assign(default_options, options);
 
-  return new Promise((resolve: Function) => {
-    window.scroll({
-      top: default_options.topOffset,
-      behavior: default_options.smooth ? "smooth" : "auto",
-    });
-
-    resolve(true);
+  window.scroll({
+    top: default_options.topOffset,
+    behavior: default_options.smooth ? "smooth" : "auto",
   });
+
+  return true;
 }
 
 /**
@@ -186,7 +191,7 @@ function scrollToTop(options = {}): Promise<boolean> {
 function getData(
   element: HTMLElement,
   data_name: string | null = null
-): Promise<Object | string> {
+): Object | string {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
@@ -198,42 +203,36 @@ function getData(
     );
   }
 
-  return new Promise((resolve: Function, reject: Function) => {
-    if (data_name) {
-      const value: string | undefined = element.dataset[data_name];
-      if (!value) {
-        reject(`Element does not have a Data Attribute of '${data_name}'`);
-      }
-
-      resolve(value);
+  if (data_name) {
+    const value: string | undefined = element.dataset[data_name];
+    if (!value) {
+      throw new Error(
+        `Element does not have a Data Attribute of '${data_name}'`
+      );
     }
 
-    resolve(element.dataset);
-  });
+    return value;
+  }
+
+  return element.dataset;
 }
 
 /**
  *  get all attributes for an element
  *
  */
-function getAttibutes(element: HTMLElement): Promise<Array<Object>> {
+function getAttibutes(element: HTMLElement): Array<Object> {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
 
-  return new Promise((resolve: Function) => {
-    const attributes: Array<Attr> = [...element.attributes];
-    const result: Array<Object> = [];
-
-    attributes.forEach((attribute) => {
-      result.push({
-        attribute: attribute.name,
-        value: attribute.textContent,
-      });
-    });
-
-    resolve(result);
+  const attributes: Array<Attr> = [...element.attributes];
+  return attributes.map((attribute) => {
+    return {
+      attribute: attribute.name,
+      value: attribute.textContent,
+    };
   });
 }
 
@@ -241,10 +240,7 @@ function getAttibutes(element: HTMLElement): Promise<Array<Object>> {
  *  get single attribute of an element
  *
  */
-function getAttibute(
-  element: HTMLElement,
-  attribute_name: string
-): Promise<string> {
+function getAttibute(element: HTMLElement, attribute_name: string): string {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
@@ -254,30 +250,29 @@ function getAttibute(
     "attribute_name must be a valid string"
   );
 
-  return new Promise((resolve: Function, reject: Function) => {
-    const attributes: NamedNodeMap = element.attributes;
-    const error = `Attribute '${attribute_name}' not found on Element`;
+  const attributes: NamedNodeMap = element.attributes;
+  const error = new Error(`Attribute '${attribute_name}' not found on Element`);
 
-    const attribute: Attr | null = attributes.getNamedItem(
-      `data-${attribute_name}`
-    );
-    if (!attribute) {
-      reject(error);
-    }
+  const attribute: Attr | null = attributes.getNamedItem(
+    `data-${attribute_name}`
+  );
 
-    if (attribute && !attribute.textContent) {
-      reject(error);
-    }
+  if (!attribute) {
+    throw error;
+  }
 
-    if (attribute) resolve(attribute.textContent);
-  });
+  if (!attribute.textContent) {
+    throw error;
+  }
+
+  return attribute.textContent;
 }
 
 /**
  *  add css classes to document
  *
  */
-function applyStyles(element: HTMLElement, styles: Object): Promise<boolean> {
+function applyStyles(element: HTMLElement, styles: Object): void {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
@@ -287,62 +282,7 @@ function applyStyles(element: HTMLElement, styles: Object): Promise<boolean> {
     "styles must be a valid Object Literal"
   );
 
-  return new Promise((resolve: Function) => {
-    Object.assign(element.style, styles);
-    resolve(true);
-  });
-}
-
-/**
- *  hide elements from DOM
- *
- */
-function hide(element: HTMLElement): void {
-  console.assert(
-    element instanceof HTMLElement,
-    "element must be a valid DOM Object"
-  );
-
-  let fadeEffect = setInterval(function () {
-    if (!element.style.opacity) {
-      element.style.opacity = "1";
-    }
-    if (parseFloat(element.style.opacity) > 0) {
-      const opacity: number = parseFloat(element.style.opacity) - 0.1;
-      element.style.opacity = opacity.toString();
-    } else {
-      clearInterval(fadeEffect);
-      element.style.display = "none";
-    }
-  }, 10);
-}
-
-/**
- *  show hidden elements in DOM
- *
- */
-function show(element: HTMLElement, display: string | null = null): void {
-  console.assert(
-    element instanceof HTMLElement,
-    "element must be a valid DOM Object"
-  );
-  if (display) {
-    console.assert(
-      display.constructor === String,
-      "display must be a valid string"
-    );
-  }
-
-  element.style.opacity = "0";
-  element.style.display = display ?? "block";
-
-  (function fade() {
-    let val = parseFloat(element.style.opacity);
-    if (!((val += 0.05) > 1)) {
-      element.style.opacity = `${val}`;
-      requestAnimationFrame(fade);
-    }
-  })();
+  Object.assign(element.style, styles);
 }
 
 /**
@@ -355,21 +295,6 @@ function emit(event_name: string, payload: any = null): void {
   });
 
   document.dispatchEvent(event);
-}
-
-/**
- *  listen for events
- *
- */
-function listen(
-  target: HTMLElement,
-  event_name: keyof HTMLElementEventMap,
-  callback: any
-): Promise<boolean> {
-  return new Promise((resolve: Function) => {
-    target.addEventListener(event_name, callback);
-    resolve(true);
-  });
 }
 
 /**
@@ -393,9 +318,8 @@ export default {
   getAttibutes,
   getAttibute,
   applyStyles,
-  hide,
-  show,
+  // hide,
+  // show,
   emit,
-  listen,
   redirect,
 };
