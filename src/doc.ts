@@ -37,7 +37,7 @@ function select(
 function selectAll(
   selector: string,
   target: HTMLDocument | HTMLElement = document
-): NodeListOf<HTMLElement> {
+): Array<HTMLElement> {
   console.assert(
     selector.constructor === String,
     "selector must be a valid string"
@@ -55,11 +55,11 @@ function selectAll(
     throw new Error(`Elements with selector "${selector}" not found.`);
   }
 
-  return elements;
+  return [...elements];
 }
 
 /**
- *  check if element exists
+ *  check if element(s) exist in DOM
  *
  */
 function exists(
@@ -77,14 +77,9 @@ function exists(
     "target must be of type HTMLDocument or HTMLElement"
   );
 
-  let result: boolean = true;
-  selectors.forEach((selector) => {
-    const element: HTMLElement | null =
-      target.querySelector<HTMLElement>(selector);
-    if (!element) result = false;
+  return selectors.every((selector: string) => {
+    return target.querySelector<HTMLElement>(selector) !== null;
   });
-
-  return result;
 }
 
 /**
@@ -169,12 +164,13 @@ function scrollToTop(options = {}): boolean {
     options.constructor === Object,
     "options must be an Object Literal"
   );
-  const default_options = {
+
+  let default_options = {
     smooth: true,
     topOffset: 0,
   };
 
-  Object.assign(default_options, options);
+  default_options = Object.assign(default_options, options);
 
   window.scroll({
     top: default_options.topOffset,
@@ -205,71 +201,43 @@ function getData(
 
   if (data_name) {
     const value: string | undefined = element.dataset[data_name];
-    if (!value) {
+    if (value === undefined) {
       throw new Error(
         `Element does not have a Data Attribute of '${data_name}'`
       );
     }
 
-    return value;
+    return value.length === 0 ? true : value;
   }
 
-  return element.dataset;
+  let result: Record<string, any> = {};
+
+  for (const [key, value] of Object.entries(element.dataset)) {
+    if (value?.length === 0) result[key] = true;
+  }
+
+  return result;
 }
 
 /**
  *  get all attributes for an element
  *
  */
-function getAttibutes(element: HTMLElement): Array<Object> {
+function getAttibutes(element: HTMLElement): Object {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
 
   const attributes: Array<Attr> = [...element.attributes];
-  return attributes.map((attribute) => {
-    return {
-      attribute: attribute.name,
-      value: attribute.textContent,
-    };
-  });
+  return attributes.reduce((accum, current) => {
+    if (current.name.startsWith("data-")) return accum;
+    return Object.assign(accum, { [current.name]: current.textContent });
+  }, {});
 }
 
 /**
- *  get single attribute of an element
- *
- */
-function getAttibute(element: HTMLElement, attribute_name: string): string {
-  console.assert(
-    element instanceof HTMLElement,
-    "element must be a valid DOM Object"
-  );
-  console.assert(
-    attribute_name.constructor === String,
-    "attribute_name must be a valid string"
-  );
-
-  const attributes: NamedNodeMap = element.attributes;
-  const error = new Error(`Attribute '${attribute_name}' not found on Element`);
-
-  const attribute: Attr | null = attributes.getNamedItem(
-    `data-${attribute_name}`
-  );
-
-  if (!attribute) {
-    throw error;
-  }
-
-  if (!attribute.textContent) {
-    throw error;
-  }
-
-  return attribute.textContent;
-}
-
-/**
- *  add css classes to document
+ *  add css properties to element
  *
  */
 function applyStyles(element: HTMLElement, styles: Object): void {
@@ -286,23 +254,124 @@ function applyStyles(element: HTMLElement, styles: Object): void {
 }
 
 /**
- *  dispatch custom events on document
+ *  hide element in DOM
  *
  */
-function emit(event_name: string, payload: any = null): void {
-  const event = new CustomEvent(event_name, {
-    detail: payload,
-  });
+function hide(element: HTMLElement): string {
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
 
-  document.dispatchEvent(event);
+  const current = element.style.display;
+  element.style.display = "none";
+
+  return current.length === 0 ? "block" : current;
+}
+
+/**
+ *  show hidden element in DOM
+ *
+ */
+function show(element: HTMLElement, display: string = "block"): void {
+  console.assert(
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
+  );
+
+  console.assert(
+    display.constructor === String,
+    "display must be of type String"
+  );
+
+  element.style.display = display;
 }
 
 /**
  *  redirect to another page
  *
  */
-function redirect(url: Location): void {
+function redirect(url: Location, new_tab: boolean = false): void {
+  console.assert(
+    url.constructor === String || url.constructor === Location,
+    "url must be a valid String or Location"
+  );
+
+  if (new_tab) {
+    window.open(url.toString(), "_blank")?.focus();
+    return;
+  }
+
   window.location = url;
+}
+
+/**
+ *  insert element before another element
+ *
+ */
+function insertBefore(
+  target_element: HTMLElement,
+  new_element: HTMLElement
+): void {
+  console.assert(
+    target_element instanceof HTMLElement,
+    "target_element must be a valid DOM Object"
+  );
+
+  console.assert(
+    new_element instanceof HTMLElement,
+    "new_element must be a valid DOM Object"
+  );
+
+  target_element.before(new_element);
+}
+
+/**
+ *  insert an element after another element
+ *
+ */
+function insertAfter(
+  target_element: HTMLElement,
+  new_element: HTMLElement
+): void {
+  const parent = target_element.parentElement;
+  if (!parent) {
+    throw new Error("Provided element does not have a parent element");
+  }
+
+  parent.insertBefore(new_element, target_element.nextSibling);
+}
+
+/**
+ *  create an HTML element
+ *
+ */
+function element(
+  type: string,
+  attributes: Object = {},
+  ...children: Array<HTMLElement | string>
+) {
+  console.assert(type.constructor === String, "type must be a string");
+  console.assert(
+    attributes.constructor === Object,
+    "attributes must be an Object literal"
+  );
+
+  // TODO: argument type checking on children
+
+  const elem: HTMLElement = document.createElement(type);
+  for (const [key, value] of Object.entries(attributes)) {
+    elem.setAttribute(key, value);
+  }
+
+  children.forEach((e) => {
+    if (e instanceof HTMLElement) elem.appendChild(e);
+    if (e.constructor === String) {
+      const node = document.createTextNode(e);
+      elem.appendChild(node);
+    }
+  });
+  return elem;
 }
 
 export default {
@@ -316,10 +385,11 @@ export default {
   scrollToTop,
   getData,
   getAttibutes,
-  getAttibute,
   applyStyles,
-  // hide,
-  // show,
-  emit,
+  hide,
+  show,
   redirect,
+  insertBefore,
+  insertAfter,
+  element,
 };

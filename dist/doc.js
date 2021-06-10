@@ -15,19 +15,15 @@ function selectAll(selector, target = document) {
     if (!elements || elements.length === 0) {
         throw new Error(`Elements with selector "${selector}" not found.`);
     }
-    return elements;
+    return [...elements];
 }
 function exists(selectors, target = document) {
     console.assert(selectors.constructor === Array &&
         selectors.every((i) => i.constructor === String), "'selectors' must be an Array of Strings");
     console.assert(target.constructor === HTMLDocument || target instanceof HTMLElement, "target must be of type HTMLDocument or HTMLElement");
-    let result = true;
-    selectors.forEach((selector) => {
-        const element = target.querySelector(selector);
-        if (!element)
-            result = false;
+    return selectors.every((selector) => {
+        return target.querySelector(selector) !== null;
     });
-    return result;
 }
 function height(element) {
     console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
@@ -60,11 +56,11 @@ function scrollToElement(element, options = {}) {
 }
 function scrollToTop(options = {}) {
     console.assert(options.constructor === Object, "options must be an Object Literal");
-    const default_options = {
+    let default_options = {
         smooth: true,
         topOffset: 0,
     };
-    Object.assign(default_options, options);
+    default_options = Object.assign(default_options, options);
     window.scroll({
         top: default_options.topOffset,
         behavior: default_options.smooth ? "smooth" : "auto",
@@ -78,50 +74,80 @@ function getData(element, data_name = null) {
     }
     if (data_name) {
         const value = element.dataset[data_name];
-        if (!value) {
+        if (value === undefined) {
             throw new Error(`Element does not have a Data Attribute of '${data_name}'`);
         }
-        return value;
+        return value.length === 0 ? true : value;
     }
-    return element.dataset;
+    let result = {};
+    for (const [key, value] of Object.entries(element.dataset)) {
+        if ((value === null || value === void 0 ? void 0 : value.length) === 0)
+            result[key] = true;
+    }
+    return result;
 }
 function getAttibutes(element) {
     console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
     const attributes = [...element.attributes];
-    return attributes.map((attribute) => {
-        return {
-            attribute: attribute.name,
-            value: attribute.textContent,
-        };
-    });
-}
-function getAttibute(element, attribute_name) {
-    console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
-    console.assert(attribute_name.constructor === String, "attribute_name must be a valid string");
-    const attributes = element.attributes;
-    const error = new Error(`Attribute '${attribute_name}' not found on Element`);
-    const attribute = attributes.getNamedItem(`data-${attribute_name}`);
-    if (!attribute) {
-        throw error;
-    }
-    if (!attribute.textContent) {
-        throw error;
-    }
-    return attribute.textContent;
+    return attributes.reduce((accum, current) => {
+        if (current.name.startsWith("data-"))
+            return accum;
+        return Object.assign(accum, { [current.name]: current.textContent });
+    }, {});
 }
 function applyStyles(element, styles) {
     console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
     console.assert(styles.constructor === Object, "styles must be a valid Object Literal");
     Object.assign(element.style, styles);
 }
-function emit(event_name, payload = null) {
-    const event = new CustomEvent(event_name, {
-        detail: payload,
-    });
-    document.dispatchEvent(event);
+function hide(element) {
+    console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+    const current = element.style.display;
+    element.style.display = "none";
+    return current.length === 0 ? "block" : current;
 }
-function redirect(url) {
+function show(element, display = "block") {
+    console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+    console.assert(display.constructor === String, "display must be of type String");
+    element.style.display = display;
+}
+function redirect(url, new_tab = false) {
+    var _a;
+    console.assert(url.constructor === String || url.constructor === Location, "url must be a valid String or Location");
+    if (new_tab) {
+        (_a = window.open(url.toString(), "_blank")) === null || _a === void 0 ? void 0 : _a.focus();
+        return;
+    }
     window.location = url;
+}
+function insertBefore(target_element, new_element) {
+    console.assert(target_element instanceof HTMLElement, "target_element must be a valid DOM Object");
+    console.assert(new_element instanceof HTMLElement, "new_element must be a valid DOM Object");
+    target_element.before(new_element);
+}
+function insertAfter(target_element, new_element) {
+    const parent = target_element.parentElement;
+    if (!parent) {
+        throw new Error("Provided element does not have a parent element");
+    }
+    parent.insertBefore(new_element, target_element.nextSibling);
+}
+function element(type, attributes = {}, ...children) {
+    console.assert(type.constructor === String, "type must be a string");
+    console.assert(attributes.constructor === Object, "attributes must be an Object literal");
+    const elem = document.createElement(type);
+    for (const [key, value] of Object.entries(attributes)) {
+        elem.setAttribute(key, value);
+    }
+    children.forEach((e) => {
+        if (e instanceof HTMLElement)
+            elem.appendChild(e);
+        if (e.constructor === String) {
+            const node = document.createTextNode(e);
+            elem.appendChild(node);
+        }
+    });
+    return elem;
 }
 export default {
     select,
@@ -134,8 +160,11 @@ export default {
     scrollToTop,
     getData,
     getAttibutes,
-    getAttibute,
     applyStyles,
-    emit,
+    hide,
+    show,
     redirect,
+    insertBefore,
+    insertAfter,
+    element,
 };

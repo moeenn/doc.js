@@ -17,8 +17,10 @@ button {
 }
 
 h1 {
+  --font: 3.2rem;
   font-family: ui-monospace;
-  font-size: 3.2rem;
+  font-size: var(--font);
+  line-height: var(--font);
   letter-spacing: 0.05rem;
   font-weight: lighter;
 }
@@ -37,7 +39,7 @@ body {
 }
 
 section {
-  padding: 2rem 0;
+  padding: 1.5rem 0;
   margin: auto;
 }
 
@@ -79,11 +81,4 @@ form input[type="submit"] {
 #app {
   display: flex;
   height: 100vh;
-}
-
-.link,
-[role='link'] {
-  color: rgb(77, 77, 224);
-  font-size: 0.85rem;
-  cursor: pointer;
 }
