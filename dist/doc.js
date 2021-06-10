@@ -102,14 +102,15 @@ function applyStyles(element, styles) {
 }
 function hide(element) {
     console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
-    const current = element.style.display;
-    element.style.display = "none";
-    return current.length === 0 ? "block" : current;
+    element.hidden = true;
 }
-function show(element, display = "block") {
+function show(element) {
     console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
-    console.assert(display.constructor === String, "display must be of type String");
-    element.style.display = display;
+    element.hidden = false;
+}
+function remove(element) {
+    console.assert(element instanceof HTMLElement, "element must be a valid DOM Object");
+    element.remove();
 }
 function redirect(url, new_tab = false) {
     var _a;
@@ -120,9 +121,15 @@ function redirect(url, new_tab = false) {
     }
     window.location = url;
 }
-function insertBefore(target_element, new_element) {
+function insert(target_element, new_element, after = true) {
     console.assert(target_element instanceof HTMLElement, "target_element must be a valid DOM Object");
     console.assert(new_element instanceof HTMLElement, "new_element must be a valid DOM Object");
+    if (after)
+        insertAfter(target_element, new_element);
+    if (!after)
+        insertBefore(target_element, new_element);
+}
+function insertBefore(target_element, new_element) {
     target_element.before(new_element);
 }
 function insertAfter(target_element, new_element) {
@@ -163,8 +170,8 @@ export default {
     applyStyles,
     hide,
     show,
+    remove,
     redirect,
-    insertBefore,
-    insertAfter,
+    insert,
     element,
 };

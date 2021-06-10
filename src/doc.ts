@@ -128,7 +128,7 @@ function distanceFromTop(element: HTMLElement): number {
  *  smooth scroll to element
  *
  */
-function scrollToElement(element: HTMLElement, options = {}): boolean {
+function scrollToElement(element: HTMLElement, options: Object = {}): boolean {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
@@ -159,7 +159,7 @@ function scrollToElement(element: HTMLElement, options = {}): boolean {
  *  scroll to the top of the document
  *
  */
-function scrollToTop(options = {}): boolean {
+function scrollToTop(options: Object = {}): boolean {
   console.assert(
     options.constructor === Object,
     "options must be an Object Literal"
@@ -257,34 +257,39 @@ function applyStyles(element: HTMLElement, styles: Object): void {
  *  hide element in DOM
  *
  */
-function hide(element: HTMLElement): string {
+function hide(element: HTMLElement): void {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
 
-  const current = element.style.display;
-  element.style.display = "none";
-
-  return current.length === 0 ? "block" : current;
+  element.hidden = true;
 }
 
 /**
  *  show hidden element in DOM
  *
  */
-function show(element: HTMLElement, display: string = "block"): void {
+function show(element: HTMLElement): void {
   console.assert(
     element instanceof HTMLElement,
     "element must be a valid DOM Object"
   );
 
+  element.hidden = false;
+}
+
+/**
+ *  delete element from DOM
+ *
+ */
+function remove(element: HTMLElement) {
   console.assert(
-    display.constructor === String,
-    "display must be of type String"
+    element instanceof HTMLElement,
+    "element must be a valid DOM Object"
   );
 
-  element.style.display = display;
+  element.remove();
 }
 
 /**
@@ -306,12 +311,13 @@ function redirect(url: Location, new_tab: boolean = false): void {
 }
 
 /**
- *  insert element before another element
+ *  insert element in DOM
  *
  */
-function insertBefore(
+function insert(
   target_element: HTMLElement,
-  new_element: HTMLElement
+  new_element: HTMLElement,
+  after: boolean = true
 ): void {
   console.assert(
     target_element instanceof HTMLElement,
@@ -323,6 +329,18 @@ function insertBefore(
     "new_element must be a valid DOM Object"
   );
 
+  if (after) insertAfter(target_element, new_element);
+  if (!after) insertBefore(target_element, new_element);
+}
+
+/**
+ *  insert element before another element
+ *  @private
+ */
+function insertBefore(
+  target_element: HTMLElement,
+  new_element: HTMLElement
+): void {
   target_element.before(new_element);
 }
 
@@ -371,6 +389,7 @@ function element(
       elem.appendChild(node);
     }
   });
+  
   return elem;
 }
 
@@ -388,8 +407,8 @@ export default {
   applyStyles,
   hide,
   show,
+  remove,
   redirect,
-  insertBefore,
-  insertAfter,
+  insert,
   element,
 };
