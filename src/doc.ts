@@ -3,7 +3,7 @@
 /**
  *  shortcut for document.querySelector
  *  with error handling
- *
+ * 
  */
 function select(
   selector: string,
@@ -32,7 +32,7 @@ function select(
 /**
  *  shortcut for document.querySelectorAll
  *  with error handling
- *
+ *  
  */
 function selectAll(
   selector: string,
@@ -60,7 +60,7 @@ function selectAll(
 
 /**
  *  check if element(s) exist in DOM
- *
+ *  
  */
 function exists(
   selectors: Array<string>,
@@ -84,7 +84,7 @@ function exists(
 
 /**
  *  find element height
- *
+ *  
  */
 function height(element: HTMLElement): number {
   console.assert(
@@ -97,7 +97,7 @@ function height(element: HTMLElement): number {
 
 /**
  *  find element width
- *
+ *  
  */
 function width(element: HTMLElement): number {
   console.assert(
@@ -110,7 +110,7 @@ function width(element: HTMLElement): number {
 
 /**
  *  get element position relative to top of the page
- *
+ *  
  */
 function distanceFromTop(element: HTMLElement): number {
   console.assert(
@@ -126,7 +126,7 @@ function distanceFromTop(element: HTMLElement): number {
 
 /**
  *  smooth scroll to element
- *
+ *  
  */
 function scrollToElement(element: HTMLElement, options: Object = {}): boolean {
   console.assert(
@@ -157,7 +157,7 @@ function scrollToElement(element: HTMLElement, options: Object = {}): boolean {
 
 /**
  *  scroll to the top of the document
- *
+ *  
  */
 function scrollToTop(options: Object = {}): boolean {
   console.assert(
@@ -346,7 +346,7 @@ function insertBefore(
 
 /**
  *  insert an element after another element
- *
+ *  @private
  */
 function insertAfter(
   target_element: HTMLElement,
@@ -362,7 +362,7 @@ function insertAfter(
 
 /**
  *  create an HTML element
- *
+ *  
  */
 function element(
   type: string,
@@ -389,7 +389,7 @@ function element(
       elem.appendChild(node);
     }
   });
-  
+
   return elem;
 }
 

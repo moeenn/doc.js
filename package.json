@@ -1,11 +1,14 @@
 {
   "scripts": {
     "watch": "tsc -w",
-    "serve": "serve ./"
+    "build": "tsc && yarn run minify",
+    "serve": "serve ./",
+    "minify": "./node_modules/.bin/uglifyjs dist/doc.js --compress --mangle >> dist/doc.min.js"
   },
   "devDependencies": {
     "serve": "^12.0.0",
-    "typescript": "^4.1.5"
+    "typescript": "^4.1.5",
+    "uglify-js": "^3.13.9"
   },
   "dependencies": {
     "jest": "^27.0.4"
