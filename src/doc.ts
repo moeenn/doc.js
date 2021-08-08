@@ -68,7 +68,7 @@ function exists(
 ): boolean {
   console.assert(
     selectors.constructor === Array &&
-      selectors.every((i) => i.constructor === String),
+    selectors.every((i) => i.constructor === String),
     "'selectors' must be an Array of Strings"
   );
 
@@ -393,6 +393,45 @@ function element(
   return elem;
 }
 
+
+/**
+ *  set a cookie
+ * 
+*/
+function setCookie<T>(name: string, value: T, days: number) {
+  let expires: string = "";
+  if (days) {
+    const date: Date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    expires = "; expires=" + date.toUTCString();
+  }
+
+  document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+
+/**
+ *  get a cookie
+ * 
+*/
+function getCookie(name: string): string {
+  let nameEQ: string = name + "=";
+  let ca: Array<string> = document.cookie.split(';');
+
+  for (let i = 0; i < ca.length; i++) {
+    let c: string | undefined = ca[i];
+
+    if (!c) {
+      throw new Error("Failed to get cookie");
+    }
+
+    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+  }
+
+  throw new Error("Failed to get cookie");
+}
+
+
 export default {
   select,
   selectAll,
@@ -411,4 +450,6 @@ export default {
   redirect,
   insert,
   element,
+  setCookie,
+  getCookie,
 };

@@ -156,6 +156,30 @@ function element(type, attributes = {}, ...children) {
     });
     return elem;
 }
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        if (!c) {
+            throw new Error("Failed to get cookie");
+        }
+        while (c.charAt(0) == ' ')
+            c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0)
+            return c.substring(nameEQ.length, c.length);
+    }
+    throw new Error("Failed to get cookie");
+}
 export default {
     select,
     selectAll,
@@ -174,4 +198,6 @@ export default {
     redirect,
     insert,
     element,
+    setCookie,
+    getCookie,
 };
