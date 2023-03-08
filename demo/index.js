@@ -1,4 +1,4 @@
-import doc from '../dist/doc.js';
+import doc from '../src/doc.mjs';
 
 window.doc = doc;
 /*

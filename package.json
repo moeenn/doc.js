@@ -1,16 +1,56 @@
 {
+  "name": "sandbox",
+  "version": "1.0.0",
+  "main": "src/doc.mjs",
+  "license": "MIT",
   "scripts": {
-    "watch": "tsc -w",
-    "build": "tsc && yarn run minify",
-    "serve": "serve ./",
-    "minify": "./node_modules/.bin/uglifyjs dist/doc.js --compress --mangle >> dist/doc.min.js"
+    "start": "node ./src/doc.mjs",
+    "type-check": "tsc --project jsconfig.json",
+    "test": "npx vitest",
+    "lint": "npx eslint ./src/ --ext .mjs",
+    "fmt": "npx prettier --write 'src/**/*.mjs'",
+    "check": "npm run type-check && npm run lint"
+  },
+  "imports": {
+    "#src/*": "./src/*"
+  },
+  "prettier": {
+    "singleQuote": false,
+    "semi": false,
+    "tabWidth": 2,
+    "trailingComma": "all"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": "eslint:recommended",
+    "env": {
+      "es6": true,
+      "browser": true
+    },
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": "latest"
+    },
+    "rules": {
+      "quotes": [
+        2,
+        "double",
+        {
+          "allowTemplateLiterals": true,
+          "avoidEscape": true
+        }
+      ],
+      "semi": [
+        "error",
+        "never"
+      ]
+    }
   },
   "devDependencies": {
-    "serve": "^12.0.0",
-    "typescript": "^4.1.5",
-    "uglify-js": "^3.13.9"
-  },
-  "dependencies": {
-    "jest": "^27.0.4"
+    "@types/node": "^18.14.5",
+    "eslint": "^8.35.0",
+    "prettier": "^2.8.4",
+    "typescript": "^4.9.5",
+    "vitest": "^0.29.2"
   }
 }

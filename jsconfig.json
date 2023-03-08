@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "checkJs": true,
+    "target": "ES2015",
+    "moduleResolution": "classic",
+    "paths": {
+      "#src/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "src"
+  ]
+}
